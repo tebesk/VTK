@@ -114,111 +114,49 @@ namespace WindowsFormsApplication1
 
 
         private void Addpoint(double[][] p)
-
-        {
-
-
-
+        {           
             // Create topology of the points (a vertex per point)
-
             int nPts = p.Length;
-
-
-
             int[] ids = new int[nPts];
 
             for (int i = 0; i < nPts; i++)
-
                 ids[i] = points.InsertNextPoint(p[i][0], p[i][1], p[i][2]);
 
-
-
             int size = Marshal.SizeOf(typeof(int)) * nPts;
-
             IntPtr pIds = Marshal.AllocHGlobal(size);
-
             Marshal.Copy(ids, 0, pIds, nPts);
-
             vertices.InsertNextCell(nPts, pIds);
-
             Marshal.FreeHGlobal(pIds);
 
-
-
-            // Create a polydata object
-
-            //  vtkPolyData pointPoly = vtkPolyData.New();
-
-
-
-            // Set the points and vertices we created as the geometry and topology of the polydata
-
             pointPoly.SetPoints(points);
-
             pointPoly.SetVerts(vertices);
-
-
-
-
-
         }
-
-
 
         double z = 0;
 
 
 
         private void timer1_Tick(object sender, EventArgs e)
-
         {
-
             //pointPoly.SetPoints(points);
-
             //pointPoly.SetVerts(vertices);
-
-
-
             z++;
-
-
-
-
-
             Random r = new Random();
-
-
-
             List<double[]> p = new List<double[]>();
-
             for (int i = 0; i < 1000000; i++)
-
                 p.Add(new double[] { r.NextDouble() * 100, r.NextDouble() * 100, r.NextDouble() * 100 });
-
-
-
             Addpoint(p.ToArray());
-
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
-
             mapper.SetInput(pointPoly);
 
-
-
             vtkActor actor = vtkActor.New();
-
             actor.SetMapper(mapper);
-
             actor.GetProperty().SetPointSize(3);
 
             vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
-
             vtkRenderer renderer = renderWindow.GetRenderers().GetFirstRenderer();
-
             renderer.SetBackground(0.3, 0.2, 0.1);
-
             renderer.AddActor(actor);
-
             Console.WriteLine(z);
 
         }
