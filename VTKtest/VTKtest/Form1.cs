@@ -36,6 +36,9 @@ namespace WindowsFormsApplication1
             }
         }
 
+        vtkUnsignedCharArray vtkcolor = vtkUnsignedCharArray.New();
+        
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -46,17 +49,22 @@ namespace WindowsFormsApplication1
             {
                 for (uint y = 0; y < GridSize; y++)
                 {
-                    xx = x + vtkMath.Random(-.2, .2);
-                    yy = y + vtkMath.Random(-.2, .2);
+                    xx = x + vtkMath.Random(.2, .2);
+                    yy = y + vtkMath.Random(-.5, .5);
                     zz = vtkMath.Random(-.5, .5);
                     points.InsertNextPoint(xx, yy, zz);
                 }
             }
+            Random r = new Random();
+            List<double[]> ppt = new List<double[]>();
+            for (int i = 0; i < 5000000; i++)
+                ppt.Add(new double[] { r.NextDouble() * 10000, r.NextDouble() * 10000, r.NextDouble() * 10000 });
+            Addpoint(ppt.ToArray());
 
             // Add the grid points to a polydata object
             vtkPolyData inputPolyData = vtkPolyData.New();
             inputPolyData.SetPoints(points);
-
+            /*
             // Triangulate the grid points
             vtkDelaunay2D delaunay = vtkDelaunay2D.New();
 
@@ -69,8 +77,9 @@ namespace WindowsFormsApplication1
             vtkPolyData outputPolyData = delaunay.GetOutput();
 
             double[] bounds = outputPolyData.GetBounds();
-
+            */
             // Find min and max z
+            double[] bounds = inputPolyData.GetBounds();
             double minz = bounds[4];
             double maxz = bounds[5];
 
@@ -87,7 +96,7 @@ namespace WindowsFormsApplication1
             colors.SetNumberOfComponents(3);
             colors.SetName("Colors");
 
-            Debug.WriteLine("There are " + outputPolyData.GetNumberOfPoints()
+            Debug.WriteLine("There are " + inputPolyData.GetNumberOfPoints()
                       + " points.");
 
 
@@ -120,9 +129,9 @@ namespace WindowsFormsApplication1
             }
          }
 #else
-            for (int i = 0; i < outputPolyData.GetNumberOfPoints(); i++)
+            for (int i = 0; i < inputPolyData.GetNumberOfPoints(); i++)
             {
-                double[] p = outputPolyData.GetPoint(i);
+                double[] p = inputPolyData.GetPoint(i);
 
                 double[] dcolor = colorLookupTable.GetColor(p[2]);
                 Debug.WriteLine("dcolor: "
@@ -147,18 +156,19 @@ namespace WindowsFormsApplication1
             }
 #endif
 
-            outputPolyData.GetPointData().SetScalars(colors);
+            inputPolyData.GetPointData().SetScalars(colors);
 
             // Create a mapper and actor
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
 #if VTK_MAJOR_VERSION_5
          mapper.SetInputConnection(outputPolyData.GetProducerPort());
 #else
-            mapper.SetInput(outputPolyData);
+            mapper.SetInput(inputPolyData);
 #endif
 
             vtkActor actor = vtkActor.New();
             actor.SetMapper(mapper);
+            actor.GetProperty().SetPointSize(30);
 
             // get a reference to the renderwindow of our renderWindowControl1
             vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
@@ -262,6 +272,8 @@ namespace WindowsFormsApplication1
         {
 
         }
+
+
     }
 }
 
