@@ -1,9 +1,11 @@
 ﻿using Kitware.VTK;
+using OpenCvSharp.CPlusPlus;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -16,7 +18,7 @@ namespace WindowsFormsApplication1
     {
 
         vtkPolyData pointPoly;
-        //  vtkPolyDataMapper mapper;
+        //vtkPolyDataMapper mapper;
         vtkCellArray vertices = vtkCellArray.New();
         vtkPoints points = vtkPoints.New();
 
@@ -25,43 +27,93 @@ namespace WindowsFormsApplication1
             InitializeComponent();
             pointPoly = vtkPolyData.New();
 
-            //       mapper = vtkPolyDataMapper.New();
+            //mapper = vtkPolyDataMapper.New();
             List<vtkCellArray> pointPolylist = new List<vtkCellArray>();
-            List<int> sa = new List<int>();
 
             for (int i = 0; i < 1; i++)
-
-            {
-
                 pointPolylist.Add(vtkCellArray.New());
-
-            }
 
         }
 
 
-
-
-
         private void Form1_Load(object sender, EventArgs e)
         {
+
+            
+
+
             Random r = new Random();
             List<double[]> p = new List<double[]>();
-
 
             //for color input 
             vtkUnsignedCharArray colors = vtkUnsignedCharArray.New();
             colors.SetNumberOfComponents(3);
             colors.SetName("Colors");
 
+
+            //file manage
+            
+            string analysis_target = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214";
+
+            System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(analysis_target);
+            IEnumerable<System.IO.FileInfo> files =
+                di.EnumerateFiles("*", System.IO.SearchOption.AllDirectories);
+            //ファイルを列挙する
+            foreach (System.IO.FileInfo f in files)
+            {
+            
+                int z = 0;
+                if (f.Extension == ".bmp")
+                {
+                    Console.WriteLine("{0}/{1}", f.FullName, f.Extension);
+                    Mat img = Cv2.ImRead(f.FullName);
+
+                    //string file = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214\904.bmp";
+                    //Mat img = Cv2.ImRead(file);
+                    z = Int32.Parse(Path.GetFileNameWithoutExtension(@f.FullName));
+
+                    for (int y = 0; y < img.Height; y++)
+                    {
+                        for (int x = 0; x < img.Width; x++)
+                        {
+                            Vec3b pix_put = img.At<Vec3b>(y, x);
+
+                            int B = pix_put[0];
+                            int G = pix_put[1];
+                            int R = pix_put[2];
+
+                            if (x> 85 && B>70 && G >70 && R >70)
+                            {
+                                p.Add(new double[] { x, y, z });
+                                if (B > 120)
+                                {
+                                    colors.InsertNextTuple3(255, 0, 0);//R,G,B
+
+                                }
+                                else
+                                {
+                                    colors.InsertNextTuple3(R, G, B);//R,G,B
+
+                                }
+
+                            }
+
+                        }
+                    }
+                }
+                //Console.WriteLine("{0}",z);
+            }
+
+
+            //Mat img = Cv2.ImRead("");
             //点群を打っていく
+            /*
             for (int i = 0; i < 5000000; i++)
             {
                 p.Add(new double[] { r.NextDouble() * 10000, r.NextDouble() * 10000, r.NextDouble() * 10000 });
                 colors.InsertNextTuple3(0, 0, 255);//R,G,B
-
             }
-
+            */
             //ポイントを反映
             Addpoint(p.ToArray());
 
@@ -71,8 +123,6 @@ namespace WindowsFormsApplication1
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
             mapper.SetInput(pointPoly);
 
-
-
             vtkActor actor = vtkActor.New();
             actor.SetMapper(mapper);
             actor.GetProperty().SetPointSize(3);
@@ -80,18 +130,11 @@ namespace WindowsFormsApplication1
             vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
             vtkRenderer renderer = renderWindow.GetRenderers().GetFirstRenderer();
 
-            renderer.SetBackground(0.3, 0.1, 0.1);
-
-
-
+            renderer.SetBackground(0.0, 0.1, 0.3);
             renderer.AddActor(actor);
 
             Console.WriteLine(z);
-
-
-
         }
-
 
 
         private void Addpoint(double[][] p)
@@ -139,16 +182,10 @@ namespace WindowsFormsApplication1
             renderer.SetBackground(0.3, 0.2, 0.1);
             renderer.AddActor(actor);
             Console.WriteLine(z);
-
         }
 
-
-
         private void renderWindowControl1_Load(object sender, EventArgs e)
-
         {
-
-
 
         }
 
