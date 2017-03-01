@@ -51,8 +51,10 @@ namespace WindowsFormsApplication1
             colors.SetName("Colors");
 
 
-            //file manage
-            
+
+
+
+            //file manage            
             string analysis_target = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214";
 
             System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(analysis_target);
@@ -117,21 +119,63 @@ namespace WindowsFormsApplication1
             //ポイントを反映
             Addpoint(p.ToArray());
 
+
+            /*
             //色情報を挿入
             pointPoly.GetPointData().SetScalars(colors);
 
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
             mapper.SetInput(pointPoly);
-
             vtkActor actor = vtkActor.New();
             actor.SetMapper(mapper);
             actor.GetProperty().SetPointSize(3);
+
 
             vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
             vtkRenderer renderer = renderWindow.GetRenderers().GetFirstRenderer();
 
             renderer.SetBackground(0.0, 0.1, 0.3);
             renderer.AddActor(actor);
+            */
+
+            //vtk setting
+            vtkVolumeRayCastCompositeFunction compositefunc = vtkVolumeRayCastCompositeFunction.New();
+            vtkVolumeRayCastMapper volumeMapper = vtkVolumeRayCastMapper.New();
+            volumeMapper.SetVolumeRayCastFunction(compositefunc);
+            volumeMapper.SetInput(pointPoly);
+
+            //color setting
+            vtkColorTransferFunction colorTransferFunction = vtkColorTransferFunction.New();
+            colorTransferFunction.AddRGBPoint(0.0, 0.0, 0.0, 0.0);
+            colorTransferFunction.AddRGBPoint(55.0, 0.0, 0.0, 0.0);
+            colorTransferFunction.AddRGBPoint(100.0, 0.0, 1.0, 0.0);
+            colorTransferFunction.AddRGBPoint(255.0, 1.0, 0.0, 0.0);
+
+
+            //透明化
+            vtkPiecewiseFunction opacityTransferFunction = vtkPiecewiseFunction.New();
+            opacityTransferFunction.AddPoint(0, 1.0);
+            opacityTransferFunction.AddPoint(100, 0.8);
+            opacityTransferFunction.AddPoint(100, 0.2);
+
+            vtkVolumeProperty volumeProperty = vtkVolumeProperty.New();
+            volumeProperty.SetColor(colorTransferFunction);
+            volumeProperty.SetScalarOpacity(opacityTransferFunction);
+            volumeProperty.ShadeOn();
+            volumeProperty.SetInterpolationTypeToLinear();
+
+            vtkVolume volume = vtkVolume.New();
+            volume.SetMapper(volumeMapper);
+            volume.SetProperty(volumeProperty);
+
+            vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
+            vtkRenderer renderer = renderWindow.GetRenderers().GetFirstRenderer();
+            renderer.SetBackground(0.0, 0.1, 0.3);
+            renderer.AddVolume(volume);
+
+
+
+
 
             Console.WriteLine(z);
         }
