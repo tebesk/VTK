@@ -48,43 +48,24 @@ namespace WindowsFormsApplication1
             Random r = new Random();
             List<double[]> p = new List<double[]>();
 
-            //点群を打っていく
-            for (int i = 0; i < 5000000; i++)
-                p.Add(new double[] { r.NextDouble() * 10000, r.NextDouble() * 10000, r.NextDouble() * 10000 });
-
-            Addpoint(p.ToArray());
-
-
-            //何してるかなぞ
-            double[] bounds = pointPoly.GetBounds();
-
-            // Find min and max z
-            double minz = bounds[4];
-            double maxz = bounds[5];
-
-            //??? 
-            vtkLookupTable colorLookupTable = vtkLookupTable.New();
-            colorLookupTable.SetTableRange(minz, maxz);
-            colorLookupTable.Build();
 
             //for color input 
             vtkUnsignedCharArray colors = vtkUnsignedCharArray.New();
             colors.SetNumberOfComponents(3);
             colors.SetName("Colors");
 
-            int total_pt_num = pointPoly.GetNumberOfPoints();
-            for (int k = 0; k < total_pt_num; k++)
+            //点群を打っていく
+            for (int i = 0; i < 5000000; i++)
             {
-                double[] pp = pointPoly.GetPoint(k);
-                double[] dcolor = colorLookupTable.GetColor(pp[2]);
+                p.Add(new double[] { r.NextDouble() * 10000, r.NextDouble() * 10000, r.NextDouble() * 10000 });
+                colors.InsertNextTuple3(0, 0, 255);//R,G,B
 
-                byte[] color = new byte[3];
-                for (uint j = 0; j < 3; j++)
-                    color[j] = (byte)(255 * dcolor[j]);
-
-                colors.InsertNextTuple3(color[0], color[1], color[2]);
             }
 
+            //ポイントを反映
+            Addpoint(p.ToArray());
+
+            //色情報を挿入
             pointPoly.GetPointData().SetScalars(colors);
 
             vtkPolyDataMapper mapper = vtkPolyDataMapper.New();
