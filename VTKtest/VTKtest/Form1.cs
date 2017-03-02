@@ -33,16 +33,12 @@ namespace WindowsFormsApplication1
             List<vtkCellArray> pointPolylist = new List<vtkCellArray>();
 
             for (int i = 0; i < 1; i++)
-                pointPolylist.Add(vtkCellArray.New());
-
+  
         }
 
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
-            
-
 
             Random r = new Random();
             List<double[]> p = new List<double[]>();
@@ -78,37 +74,35 @@ namespace WindowsFormsApplication1
             vtkImageData imgData = vtkImageData.New();
             vtkUnsignedCharArray pixel = vtkUnsignedCharArray.New();
 
-            string file = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214\904.bmp";
+            string file = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214\315.bmp";
             Mat img = Cv2.ImRead(file);
 
-            imgData.SetDimensions(600, 521, 160);
+            imgData.SetDimensions(100, 100, 160);
             imgData.SetScalarTypeToUnsignedChar();
             imgData.SetNumberOfScalarComponents(4);
+            imgData.SetSpacing(0.1, 0.1, 0.1);
             for (int i = 0; i < 160; i++)
             {
-
-
-                for (int y = 0; y < img.Height; y++)
+                for (int y = 0; y < 100; y++)
                 {
-                    for (int x = 0; x < img.Width; x++)
+                    for (int x = 0; x < 100; x++)
                     {
 
 
                         Vec3b pix_put = img.At<Vec3b>(y, x);
+                        imgData.SetScalarComponentFromDouble(x, y, i, 0, i+90);
 
                         int B = pix_put[0];
                         int G = pix_put[1];
                         double R = pix_put[2];
-                        if (B>70)
+                        if (B>70 && x>30)
+
                         {
-                            imgData.SetScalarComponentFromDouble(x, y, i, 2, R);
 
                         }
                     }
                 }
             }
-
-
 
             vtkVolumeRayCastCompositeFunction compositefunc = vtkVolumeRayCastCompositeFunction.New();
             vtkVolumeRayCastMapper volumeMapper = vtkVolumeRayCastMapper.New();
@@ -117,17 +111,18 @@ namespace WindowsFormsApplication1
 
             //color setting
             vtkColorTransferFunction colorTransferFunction = vtkColorTransferFunction.New();
-            colorTransferFunction.AddRGBPoint(0.0, 0.0, 0.0, 0.0);
-            colorTransferFunction.AddRGBPoint(55.0, 0.0, 0.0, 0.0);
+            //colorTransferFunction.AddRGBPoint(0.0, 0.0, 0.0, 0.0);
+            //colorTransferFunction.AddRGBPoint(55.0, 0.0, 0.0, 0.0);
             colorTransferFunction.AddRGBPoint(70.0, 0.0, 1.0, 0.0);
-            colorTransferFunction.AddRGBPoint(100.0, 0.0, 1.0, 0.0);
-            colorTransferFunction.AddRGBPoint(150.0, 1.0, 0.0, 0.0);
+            colorTransferFunction.AddRGBPoint(100.0, 1.0, 0.0, 0.0);
+            colorTransferFunction.AddRGBPoint(120.0, 1.0, 0.0, 0.0);
             colorTransferFunction.AddRGBPoint(250.0, 1.0, 0.0, 0.0);
             //透明化
             vtkPiecewiseFunction opacityTransferFunction = vtkPiecewiseFunction.New();
             opacityTransferFunction.AddPoint(0, 0.0);
-            opacityTransferFunction.AddPoint(55, 0.1);
-            opacityTransferFunction.AddPoint(100, 0.8);
+            opacityTransferFunction.AddPoint(50, 0.0);
+            opacityTransferFunction.AddPoint(55, 1.0);
+            opacityTransferFunction.AddPoint(100, 1.0);
             opacityTransferFunction.AddPoint(150, 1.0);
 
             vtkVolumeProperty volumeProperty = vtkVolumeProperty.New();
@@ -142,7 +137,7 @@ namespace WindowsFormsApplication1
 
             vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
             vtkRenderer renderer = renderWindow.GetRenderers().GetFirstRenderer();
-            renderer.SetBackground(0.0, 0.1, 0.1);
+            renderer.SetBackground(1.0, 1.0, 1.0);
             renderer.AddVolume(volume);            
 
             Console.WriteLine(z);
@@ -191,7 +186,7 @@ namespace WindowsFormsApplication1
 
             vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
             vtkRenderer renderer = renderWindow.GetRenderers().GetFirstRenderer();
-            renderer.SetBackground(0.3, 0.2, 0.1);
+            renderer.SetBackground(0.3, 0.2, 1.0);
             renderer.AddActor(actor);
             Console.WriteLine(z);
         }
