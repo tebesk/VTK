@@ -21,6 +21,8 @@ namespace WindowsFormsApplication1
         //vtkPolyDataMapper mapper;
         vtkCellArray vertices = vtkCellArray.New();
         vtkPoints points = vtkPoints.New();
+        
+
 
         public Form1()
         {
@@ -50,9 +52,9 @@ namespace WindowsFormsApplication1
             colors.SetNumberOfComponents(3);
             colors.SetName("Colors");
 
+            //vtkDataSet dataseting = vtkDataSet.New()
 
-
-
+            /*
 
             //file manage            
             string analysis_target = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214";
@@ -68,17 +70,17 @@ namespace WindowsFormsApplication1
                 if (f.Extension == ".bmp")
                 {
                     Console.WriteLine("{0}/{1}", f.FullName, f.Extension);
-                    Mat img = Cv2.ImRead(f.FullName);
+                    Mat oneimg = Cv2.ImRead(f.FullName);
 
                     //string file = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214\904.bmp";
                     //Mat img = Cv2.ImRead(file);
                     z = Int32.Parse(Path.GetFileNameWithoutExtension(@f.FullName));
 
-                    for (int y = 0; y < img.Height; y++)
+                    for (int y = 0; y < oneimg.Height; y++)
                     {
-                        for (int x = 0; x < img.Width; x++)
+                        for (int x = 0; x < oneimg.Width; x++)
                         {
-                            Vec3b pix_put = img.At<Vec3b>(y, x);
+                            Vec3b pix_put = oneimg.At<Vec3b>(y, x);
 
                             int B = pix_put[0];
                             int G = pix_put[1];
@@ -106,21 +108,10 @@ namespace WindowsFormsApplication1
                 //Console.WriteLine("{0}",z);
             }
 
-
-            //Mat img = Cv2.ImRead("");
-            //点群を打っていく
-            /*
-            for (int i = 0; i < 5000000; i++)
-            {
-                p.Add(new double[] { r.NextDouble() * 10000, r.NextDouble() * 10000, r.NextDouble() * 10000 });
-                colors.InsertNextTuple3(0, 0, 255);//R,G,B
-            }
-            */
-            //ポイントを反映
             Addpoint(p.ToArray());
 
-
-            /*
+            
+            
             //色情報を挿入
             pointPoly.GetPointData().SetScalars(colors);
 
@@ -136,13 +127,41 @@ namespace WindowsFormsApplication1
 
             renderer.SetBackground(0.0, 0.1, 0.3);
             renderer.AddActor(actor);
+            
             */
 
-            //vtk setting
+
+            ///////vtk voxel -----------------------------------------------
+            vtkImageData imgData = vtkImageData.New();
+            vtkUnsignedCharArray pixel = vtkUnsignedCharArray.New();
+
+            string file = @"C:\00_Share\01_AndeuxWorks\ver20170301\15A24\161222161214\904.bmp";
+            Mat img = Cv2.ImRead(file);
+
+            imgData.SetDimensions(600, 521, 6);
+            imgData.SetScalarTypeToUnsignedChar();
+            imgData.SetNumberOfScalarComponents(4);
+            for (int y = 0; y < img.Height; y++)
+            {
+                for (int x = 0; x < img.Width; x++)
+                {
+                   
+                    Vec3b pix_put = img.At<Vec3b>(y, x);
+
+                    int B = pix_put[0];
+                    int G = pix_put[1];
+                    double R = pix_put[2];
+
+                    imgData.SetScalarComponentFromDouble(x, y, 1, 0, R);
+                }
+            }
+
+
+
             vtkVolumeRayCastCompositeFunction compositefunc = vtkVolumeRayCastCompositeFunction.New();
             vtkVolumeRayCastMapper volumeMapper = vtkVolumeRayCastMapper.New();
             volumeMapper.SetVolumeRayCastFunction(compositefunc);
-            volumeMapper.SetInput(pointPoly);
+            volumeMapper.SetInput(imgData);
 
             //color setting
             vtkColorTransferFunction colorTransferFunction = vtkColorTransferFunction.New();
@@ -151,12 +170,12 @@ namespace WindowsFormsApplication1
             colorTransferFunction.AddRGBPoint(100.0, 0.0, 1.0, 0.0);
             colorTransferFunction.AddRGBPoint(255.0, 1.0, 0.0, 0.0);
 
-
             //透明化
             vtkPiecewiseFunction opacityTransferFunction = vtkPiecewiseFunction.New();
-            opacityTransferFunction.AddPoint(0, 1.0);
-            opacityTransferFunction.AddPoint(100, 0.8);
-            opacityTransferFunction.AddPoint(100, 0.2);
+            opacityTransferFunction.AddPoint(0, 0.1);
+            opacityTransferFunction.AddPoint(55, 0.1);
+            opacityTransferFunction.AddPoint(100, 0.5);
+            opacityTransferFunction.AddPoint(150, 0.2);
 
             vtkVolumeProperty volumeProperty = vtkVolumeProperty.New();
             volumeProperty.SetColor(colorTransferFunction);
@@ -171,11 +190,7 @@ namespace WindowsFormsApplication1
             vtkRenderWindow renderWindow = renderWindowControl1.RenderWindow;
             vtkRenderer renderer = renderWindow.GetRenderers().GetFirstRenderer();
             renderer.SetBackground(0.0, 0.1, 0.3);
-            renderer.AddVolume(volume);
-
-
-
-
+            renderer.AddVolume(volume);            
 
             Console.WriteLine(z);
         }
